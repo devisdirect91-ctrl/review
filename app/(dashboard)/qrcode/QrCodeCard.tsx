@@ -181,10 +181,10 @@ async function renderCard(canvas: HTMLCanvasElement, w: number, h: number, opts:
     noShadow()
 
     // Main phrase — bold
-    const phraseFs = fitText(topText || 'Votre avis compte !', Math.round(w * 0.058), '800', w * 0.84)
+    const phraseFs = fitText(topText || 'VOTRE AVIS COMPTE !', Math.round(w * 0.058), '800', w * 0.84)
     ctx.fillStyle = tc
     shadow(phraseFs)
-    ctx.fillText(topText || 'Votre avis compte !', w / 2, topMid + Math.round(w * 0.042))
+    ctx.fillText(topText || 'VOTRE AVIS COMPTE !', w / 2, topMid + Math.round(w * 0.042))
     noShadow()
   }
 
@@ -227,7 +227,7 @@ export default function QrCodeCard({ collectUrl, restaurantName }: Props) {
   const [logoEl,         setLogoEl]         = useState<HTMLImageElement | null>(null)
   const [logoName,       setLogoName]       = useState<string | null>(null)
   const [qrColor,        setQrColor]        = useState('#0f172a')
-  const [topText,        setTopText]        = useState('Votre avis compte !')
+  const [topText,        setTopText]        = useState('VOTRE AVIS COMPTE !')
   const [bottomText,     setBottomText]     = useState(restaurantName)
   const [showTopText,    setShowTopText]    = useState(true)
   const [showBottomText, setShowBottomText] = useState(true)
@@ -527,7 +527,7 @@ export default function QrCodeCard({ collectUrl, restaurantName }: Props) {
                     type="text"
                     value={topText}
                     onChange={e => setTopText(e.target.value.slice(0, 40))}
-                    placeholder="Votre avis compte !"
+                    placeholder="VOTRE AVIS COMPTE !"
                     className="w-full px-3 py-2 pr-12 border border-slate-200 rounded-xl text-sm
                                focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                   />

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import QrCodeCard from './QrCodeCard'
+import ReviewBoostCard from './ReviewBoostCard'
 
 export default async function QrCodePage() {
   const supabase = createClient()
@@ -34,7 +34,7 @@ export default async function QrCodePage() {
       </div>
 
       {restaurant && collectUrl ? (
-        <QrCodeCard
+        <ReviewBoostCard
           collectUrl={collectUrl}
           restaurantName={restaurant.name}
         />
