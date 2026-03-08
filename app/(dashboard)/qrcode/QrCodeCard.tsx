@@ -325,7 +325,7 @@ export default function QrCodeCard({ collectUrl, restaurantName }: Props) {
 
   // ── Toggle component ──────────────────────────────────────────────────────
 
-  function Toggle({ on, onToggle, label }: { on: boolean; onToggle: () => void; label: string }) {
+  function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
     return (
       <button
         onClick={onToggle}
@@ -519,7 +519,7 @@ export default function QrCodeCard({ collectUrl, restaurantName }: Props) {
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-slate-700">Texte au-dessus du QR</p>
-                <Toggle on={showTopText} onToggle={() => setShowTopText(v => !v)} label="top" />
+                <Toggle on={showTopText} onToggle={() => setShowTopText(v => !v)} />
               </div>
               {showTopText && (
                 <div className="relative">
@@ -542,7 +542,7 @@ export default function QrCodeCard({ collectUrl, restaurantName }: Props) {
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-medium text-slate-700">Texte en bas du QR</p>
-                <Toggle on={showBottomText} onToggle={() => setShowBottomText(v => !v)} label="bottom" />
+                <Toggle on={showBottomText} onToggle={() => setShowBottomText(v => !v)} />
               </div>
               {showBottomText && (
                 <div className="relative">

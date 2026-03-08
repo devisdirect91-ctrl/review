@@ -12,7 +12,6 @@ export default function RatingForm({ restaurantId, googleReviewUrl }: Props) {
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
   const [step, setStep] = useState<'rating' | 'details' | 'done'>('rating')
-  const [feedbackId, setFeedbackId] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -25,7 +24,6 @@ export default function RatingForm({ restaurantId, googleReviewUrl }: Props) {
 
     const data = await res.json()
     if (data.id) {
-      setFeedbackId(data.id)
       setStep('done')
 
       // If rating >= 4, redirect to Google after marking as redirected
