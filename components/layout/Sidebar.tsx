@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
@@ -81,9 +82,9 @@ export default function Sidebar({ restaurant, userEmail }: Props) {
       {/* ── Desktop sidebar ──────────────────────────────────── */}
       <aside className="hidden md:flex flex-col fixed inset-y-0 left-0 w-60 bg-slate-900">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-6 h-16 shrink-0 border-b border-slate-800">
-          <span className="text-xl">⭐</span>
-          <span className="font-bold text-white text-lg">ReviewBoost</span>
+        <div className="flex items-center gap-3 px-5 h-16 shrink-0 border-b border-slate-800">
+          <Image src="/logo.png" alt="QResto" width={32} height={32} className="shrink-0" />
+          <span className="font-bold text-white text-lg tracking-tight">QResto</span>
         </div>
 
         {/* Nav */}
@@ -98,8 +99,8 @@ export default function Sidebar({ restaurant, userEmail }: Props) {
       <header className="md:hidden sticky top-0 z-30 flex items-center justify-between
                          h-14 px-4 bg-slate-900 border-b border-slate-800">
         <div className="flex items-center gap-2">
-          <span className="text-lg">⭐</span>
-          <span className="font-bold text-white">ReviewBoost</span>
+          <Image src="/logo.png" alt="QResto" width={26} height={26} className="shrink-0" />
+          <span className="font-bold text-white tracking-tight">QResto</span>
         </div>
         <button
           onClick={() => setMobileOpen((v) => !v)}

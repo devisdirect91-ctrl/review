@@ -35,7 +35,7 @@ export default async function CollectPage({ params }: Props) {
         />
       </div>
 
-      <p className="text-center text-xs text-gray-400 mt-6">Propulsé par ReviewBoost</p>
+      <p className="text-center text-xs text-gray-400 mt-6">Propulsé par QResto</p>
     </div>
   )
 }

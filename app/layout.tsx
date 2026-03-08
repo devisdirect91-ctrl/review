@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'ReviewBoost – Gérez vos avis Google',
+  title: 'QResto – Gérez vos avis Google',
   description: 'Collectez et gérez les avis Google de vos restaurants facilement.',
 }
 

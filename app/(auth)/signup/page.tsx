@@ -2,6 +2,7 @@
 
 import { useFormState } from 'react-dom'
 import Link from 'next/link'
+import Image from 'next/image'
 import { signupAction } from './actions'
 import SubmitButton from '@/components/ui/SubmitButton'
 
@@ -12,8 +13,9 @@ export default function SignupPage() {
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
       {/* En-tête */}
       <div className="mb-8">
-        <Link href="/" className="text-2xl font-bold text-indigo-600 block mb-6">
-          ReviewBoost
+        <Link href="/" className="flex items-center gap-2.5 mb-6">
+          <Image src="/logo.png" alt="QResto" width={36} height={36} />
+          <span className="text-2xl font-bold text-gray-900 tracking-tight">QResto</span>
         </Link>
         <h1 className="text-xl font-semibold text-gray-900">Créer un compte</h1>
         <p className="text-sm text-gray-500 mt-1">

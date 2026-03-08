@@ -75,40 +75,31 @@ async function renderCard(
   ctx.fillStyle = vGrad(0, h)
   ctx.fillRect(0, 0, w, h)
 
-  // ── 2. Header — pin + "ReviewBoost" ──────────────────────────────────────
-  const pinCX  = w / 2
-  const pinR   = Math.round(32 * s)
-  const pinTY  = Math.round(headerH * 0.10)
-  const pinCY  = pinTY + pinR
-  const pinTip = pinCY + pinR + Math.round(pinR * 0.85)
+  // ── 2. Header — logo QResto + nom ────────────────────────────────────────
+  // Charge le logo depuis /logo.png
+  const brandLogo = await new Promise<HTMLImageElement | null>((resolve) => {
+    const img = new Image()
+    img.onload  = () => resolve(img)
+    img.onerror = () => resolve(null)
+    img.src = '/logo.png'
+  })
 
-  ctx.fillStyle = 'rgba(255,255,255,0.93)'
-  ctx.beginPath()
-  ctx.arc(pinCX, pinCY, pinR, Math.PI, 0, false)
-  ctx.bezierCurveTo(pinCX + pinR, pinCY + pinR * 0.55, pinCX, pinTip, pinCX, pinTip)
-  ctx.bezierCurveTo(pinCX, pinTip, pinCX - pinR, pinCY + pinR * 0.55, pinCX - pinR, pinCY)
-  ctx.closePath()
-  ctx.fill()
+  const logoSize = Math.round(headerH * 0.52)
+  const logoX    = Math.round((w - logoSize) / 2)
+  const logoY    = Math.round(headerH * 0.08)
 
-  const bw  = Math.round(3.5 * s)
-  const bh  = Math.round(pinR * 0.95)
-  const by  = pinCY - Math.round(bh / 2)
-  const bx1 = pinCX - Math.round(8 * s)
-  const bx2 = pinCX + Math.round(5 * s)
-  ctx.fillStyle = opts.color1
-  ctx.fillRect(bx1 - bw / 2, by, bw, bh)
-  ctx.fillRect(bx2 - bw / 2, by, bw, bh)
-  ctx.fillRect(bx1 - bw * 1.8, by, bw * 0.7, bh * 0.38)
-  ctx.fillRect(bx1 + bw * 0.8, by, bw * 0.7, bh * 0.38)
+  if (brandLogo) {
+    ctx.drawImage(brandLogo, logoX, logoY, logoSize, logoSize)
+  }
 
-  const nameFs = Math.round(28 * s)
-  const nameY  = pinTip + Math.round(12 * s)
+  const nameFs = Math.round(26 * s)
+  const nameY  = logoY + logoSize + Math.round(8 * s)
   ctx.font         = `bold ${nameFs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
   ctx.textAlign    = 'center'
   ctx.textBaseline = 'top'
   ctx.fillStyle    = 'white'
   textShadow(nameFs)
-  ctx.fillText('ReviewBoost', w / 2, nameY)
+  ctx.fillText('QResto', w / 2, nameY)
   noShadow()
 
   // ── 3. Wave ───────────────────────────────────────────────────────────────

@@ -236,7 +236,7 @@ export default function QrCodeClient({ collectUrl, restaurantName }: Props) {
       pdf.line(20, 260, W - 20, 260)
       pdf.setFontSize(8)
       pdf.setTextColor(148, 163, 184)
-      pdf.text('Powered by ReviewBoost', W / 2, 267, { align: 'center' })
+      pdf.text('Powered by QResto', W / 2, 267, { align: 'center' })
 
       pdf.save(`qrcode-${restaurantName.toLowerCase().replace(/\s+/g, '-')}.pdf`)
     } finally {
