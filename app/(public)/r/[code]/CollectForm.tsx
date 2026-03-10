@@ -10,28 +10,21 @@ interface Props {
   googleReviewUrl: string | null
 }
 
-const CHOICES = [
-  { key: 'great', emoji: '😍', label: 'Génial', rating: 5 },
-  { key: 'ok',    emoji: '😐', label: 'Moyen',  rating: 3 },
-  { key: 'bad',   emoji: '😞', label: 'Déçu',   rating: 1 },
-] as const
-
-type Choice = (typeof CHOICES)[number]['key']
-type NegativeRating = 1 | 3
+const LABELS = ['', 'Très mauvais', 'Mauvais', 'Correct', 'Bien', 'Excellent']
 
 export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
   const [step, setStep] = useState<Step>('initial')
-  // Stocké lors du clic emoji, utilisé à la soumission
-  const [negativeRating, setNegativeRating] = useState<NegativeRating>(3)
+  const [rating, setRating] = useState(0)
+  const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleChoice(choice: Choice) {
-    if (choice === 'great') {
+  function handleStarClick(star: number) {
+    setRating(star)
+    if (star >= 4) {
       setStep('positive')
     } else {
-      setNegativeRating(choice === 'ok' ? 3 : 1)
       setStep('negative')
     }
   }
@@ -39,9 +32,8 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
   async function handleGoogleRedirect() {
     setLoading(true)
     try {
-      await submitPositiveFeedback(restaurantId)
+      await submitPositiveFeedback(restaurantId, rating as 4 | 5)
     } finally {
-      // On redirige même si l'enregistrement échoue
       if (googleReviewUrl) window.location.href = googleReviewUrl
       setLoading(false)
     }
@@ -50,10 +42,9 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
   async function handleNegativeSubmit() {
     setLoading(true)
     try {
-      await submitNegativeFeedback(restaurantId, negativeRating, comment, email)
+      await submitNegativeFeedback(restaurantId, rating as 1 | 2 | 3, comment, email)
       setStep('thanks')
     } catch {
-      // Silently fail — ne pas bloquer l'utilisateur
       setStep('thanks')
     } finally {
       setLoading(false)
@@ -62,26 +53,30 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
 
   // ── Initial ────────────────────────────────────────────────
   if (step === 'initial') {
+    const active = hovered || rating
     return (
-      <div className="space-y-8">
+      <div className="space-y-6">
         <p className="text-center text-gray-600 text-lg">
           Comment s&apos;est passée votre expérience&nbsp;?
         </p>
-        <div className="flex justify-center gap-4">
-          {CHOICES.map(({ key, emoji, label }) => (
+        <div className="flex justify-center gap-2">
+          {[1, 2, 3, 4, 5].map((star) => (
             <button
-              key={key}
-              onClick={() => handleChoice(key)}
-              className="flex flex-col items-center gap-2 px-5 py-4 rounded-2xl border-2 border-gray-100
-                         bg-white hover:border-indigo-300 hover:bg-indigo-50
-                         active:scale-95 transition-all duration-150
-                         min-w-[80px] shadow-sm"
+              key={star}
+              type="button"
+              onClick={() => handleStarClick(star)}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              className="text-5xl transition-transform duration-100 hover:scale-110 active:scale-95"
+              aria-label={`${star} étoile${star > 1 ? 's' : ''}`}
             >
-              <span className="text-4xl leading-none">{emoji}</span>
-              <span className="text-sm font-medium text-gray-700">{label}</span>
+              <span className={active >= star ? 'text-yellow-400' : 'text-gray-200'}>★</span>
             </button>
           ))}
         </div>
+        {active > 0 && (
+          <p className="text-center text-sm text-gray-500">{LABELS[active]}</p>
+        )}
       </div>
     )
   }
@@ -172,24 +167,23 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
           {loading ? 'Envoi…' : 'Envoyer'}
         </button>
 
-        {/* Lien Google — toujours visible pour la conformité */}
         {googleReviewUrl && (
-          <div className="flex items-center gap-3 pt-1">
-            <div className="flex-1 border-t border-gray-200" />
-            <span className="text-xs text-gray-400 shrink-0">ou</span>
-            <div className="flex-1 border-t border-gray-200" />
-          </div>
-        )}
-        {googleReviewUrl && (
-          <a
-            href={googleReviewUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block text-center text-sm text-indigo-500 hover:text-indigo-700
-                       hover:underline transition-colors"
-          >
-            Laisser un avis sur Google →
-          </a>
+          <>
+            <div className="flex items-center gap-3 pt-1">
+              <div className="flex-1 border-t border-gray-200" />
+              <span className="text-xs text-gray-400 shrink-0">ou</span>
+              <div className="flex-1 border-t border-gray-200" />
+            </div>
+            <a
+              href={googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-center text-sm text-indigo-500 hover:text-indigo-700
+                         hover:underline transition-colors"
+            >
+              Laisser un avis sur Google →
+            </a>
+          </>
         )}
       </div>
     )

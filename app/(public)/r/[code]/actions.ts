@@ -2,12 +2,12 @@
 
 import { createClient } from '@/lib/supabase/server'
 
-export async function submitPositiveFeedback(restaurantId: string) {
+export async function submitPositiveFeedback(restaurantId: string, rating: 4 | 5 = 5) {
   const supabase = createClient()
 
   const { error } = await supabase.from('feedbacks').insert({
     establishment_id: restaurantId,
-    rating: 5,
+    rating,
     redirected_to_google: true,
   })
 
@@ -16,7 +16,7 @@ export async function submitPositiveFeedback(restaurantId: string) {
 
 export async function submitNegativeFeedback(
   restaurantId: string,
-  rating: 1 | 3,
+  rating: 1 | 2 | 3,
   comment?: string,
   email?: string,
 ) {
