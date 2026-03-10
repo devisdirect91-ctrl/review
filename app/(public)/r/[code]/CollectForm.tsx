@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { submitPositiveFeedback, submitNegativeFeedback } from './actions'
+import { submitPositiveFeedback, markRedirectedToGoogle, submitNegativeFeedback } from './actions'
 
 type Step = 'initial' | 'positive' | 'negative' | 'thanks'
 
@@ -19,19 +19,26 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
   const [comment, setComment] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [feedbackId, setFeedbackId] = useState<string | null>(null)
 
   async function handleStarClick(star: number) {
     setRating(star)
     if (star >= 4) {
-      // Enregistrer immédiatement, quelle que soit la suite (Google ou non)
-      await submitPositiveFeedback(restaurantId, star as 4 | 5)
+      setLoading(true)
+      try {
+        const id = await submitPositiveFeedback(restaurantId, star as 4 | 5)
+        setFeedbackId(id)
+      } finally {
+        setLoading(false)
+      }
       setStep('positive')
     } else {
       setStep('negative')
     }
   }
 
-  function handleGoogleRedirect() {
+  async function handleGoogleRedirect() {
+    if (feedbackId) await markRedirectedToGoogle(feedbackId)
     if (googleReviewUrl) window.location.href = googleReviewUrl
   }
 
@@ -94,14 +101,18 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
           <div className="flex flex-col gap-3">
             <button
               onClick={handleGoogleRedirect}
+              disabled={loading}
               className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold
-                         hover:bg-indigo-700 active:scale-95 transition-all"
+                         hover:bg-indigo-700 active:scale-95 transition-all
+                         disabled:opacity-60 disabled:cursor-wait"
             >
               ⭐ Laisser un avis Google
             </button>
             <button
               onClick={() => setStep('thanks')}
-              className="w-full py-2 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+              disabled={loading}
+              className="w-full py-2 text-gray-400 text-sm hover:text-gray-600 transition-colors
+                         disabled:opacity-40"
             >
               Non merci
             </button>
