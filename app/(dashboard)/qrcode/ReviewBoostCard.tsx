@@ -105,7 +105,6 @@ async function renderCard(
   const starsGap   = Math.round(20 * s)
   const scanFs     = Math.round(46 * s)
   const scanGap    = Math.round(16 * s)
-  const totalBlock = contH + starsGap + starsFs + scanGap + scanFs
   const contY      = Math.round(h * 0.27)
 
   // Titre centré verticalement entre y=0 et contY
