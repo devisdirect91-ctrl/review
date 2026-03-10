@@ -20,23 +20,19 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
 
-  function handleStarClick(star: number) {
+  async function handleStarClick(star: number) {
     setRating(star)
     if (star >= 4) {
+      // Enregistrer immédiatement, quelle que soit la suite (Google ou non)
+      await submitPositiveFeedback(restaurantId, star as 4 | 5)
       setStep('positive')
     } else {
       setStep('negative')
     }
   }
 
-  async function handleGoogleRedirect() {
-    setLoading(true)
-    try {
-      await submitPositiveFeedback(restaurantId, rating as 4 | 5)
-    } finally {
-      if (googleReviewUrl) window.location.href = googleReviewUrl
-      setLoading(false)
-    }
+  function handleGoogleRedirect() {
+    if (googleReviewUrl) window.location.href = googleReviewUrl
   }
 
   async function handleNegativeSubmit() {
@@ -98,16 +94,13 @@ export default function CollectForm({ restaurantId, googleReviewUrl }: Props) {
           <div className="flex flex-col gap-3">
             <button
               onClick={handleGoogleRedirect}
-              disabled={loading}
               className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold
-                         hover:bg-indigo-700 active:scale-95 transition-all
-                         disabled:opacity-60 disabled:cursor-wait"
+                         hover:bg-indigo-700 active:scale-95 transition-all"
             >
               ⭐ Laisser un avis Google
             </button>
             <button
               onClick={() => setStep('thanks')}
-              disabled={loading}
               className="w-full py-2 text-gray-400 text-sm hover:text-gray-600 transition-colors"
             >
               Non merci
