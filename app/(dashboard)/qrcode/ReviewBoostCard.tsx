@@ -13,6 +13,7 @@ interface RenderOpts {
   color1:  string
   color2:  string
   logoEl:  HTMLImageElement | null
+  bgEl:    HTMLImageElement | null
   topText: string
   scanText: string
 }
@@ -24,7 +25,7 @@ const DW = 1299; const DH = 2008
 // ── Defaults ──────────────────────────────────────────────────────────────────
 const DEF_COLOR1   = '#FF6B35'
 const DEF_COLOR2   = '#E63946'
-const DEF_TOP_TEXT = 'Donnez-nous votre avis\u00A0!'
+const DEF_TOP_TEXT = 'VOTRE AVIS COMPTE\u00A0!'
 const DEF_SCAN     = 'Scannez-moi\u00A0!'
 const C_GOLD       = '#FFD700'
 
@@ -65,86 +66,56 @@ async function renderCard(
   }
   function noShadow() { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0 }
 
-  // ── Layout ────────────────────────────────────────────────────────────────
-  const headerH = Math.round(h * 0.190)
-  const waveH   = Math.round(h * 0.085)
-  const bodyY   = headerH + waveH
-  const bodyH   = h - bodyY
-
   // ── 1. Background ─────────────────────────────────────────────────────────
-  ctx.fillStyle = vGrad(0, h)
-  ctx.fillRect(0, 0, w, h)
-
-  // ── 2. Header — logo QResto + nom ────────────────────────────────────────
-  // Charge le logo depuis /logo.png
-  const brandLogo = await new Promise<HTMLImageElement | null>((resolve) => {
-    const img = new Image()
-    img.onload  = () => resolve(img)
-    img.onerror = () => resolve(null)
-    img.src = '/logo.png'
-  })
-
-  const logoSize = Math.round(headerH * 0.52)
-  const logoX    = Math.round((w - logoSize) / 2)
-  const logoY    = Math.round(headerH * 0.08)
-
-  if (brandLogo) {
-    ctx.drawImage(brandLogo, logoX, logoY, logoSize, logoSize)
+  if (opts.bgEl) {
+    const img = opts.bgEl
+    const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight)
+    const sw = img.naturalWidth  * scale
+    const sh = img.naturalHeight * scale
+    ctx.drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh)
+    // overlay gradient for readability
+    const overlay = ctx.createLinearGradient(0, 0, 0, h)
+    overlay.addColorStop(0, opts.color1 + 'BB')
+    overlay.addColorStop(1, opts.color2 + 'BB')
+    ctx.fillStyle = overlay
+    ctx.fillRect(0, 0, w, h)
+  } else {
+    ctx.fillStyle = vGrad(0, h)
+    ctx.fillRect(0, 0, w, h)
   }
 
-  const nameFs = Math.round(26 * s)
-  const nameY  = logoY + logoSize + Math.round(8 * s)
-  ctx.font         = `bold ${nameFs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
-  ctx.textAlign    = 'center'
-  ctx.textBaseline = 'top'
-  ctx.fillStyle    = 'white'
-  textShadow(nameFs)
-  ctx.fillText('QResto', w / 2, nameY)
-  noShadow()
-
-  // ── 3. Wave ───────────────────────────────────────────────────────────────
-  const wY = headerH
-  ctx.fillStyle = 'white'
-  ctx.beginPath()
-  ctx.moveTo(0, wY)
-  ctx.quadraticCurveTo(w * 0.22, wY - Math.round(20 * s), w * 0.50, wY + Math.round(16 * s))
-  ctx.quadraticCurveTo(w * 0.78, wY + Math.round(48 * s), w, wY + Math.round(12 * s))
-  ctx.lineTo(w, wY + waveH)
-  ctx.lineTo(0, wY + waveH)
-  ctx.closePath()
-  ctx.fill()
-
-  const waveTxtFs = Math.round(30 * s)
-  const waveTxtY  = wY + Math.round(waveH * 0.68)
-  const waveTxt   = opts.topText || DEF_TOP_TEXT
-  const maxWaveW  = w * 0.88
-
-  // Auto-fit font size
-  let wfs = waveTxtFs
-  ctx.font = `900 ${wfs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
-  while (ctx.measureText(waveTxt).width > maxWaveW && wfs > 14) {
-    wfs--
-    ctx.font = `900 ${wfs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
+  // ── 2. Titre principal (centré entre le haut et le QR) ───────────────────
+  const titleTxt  = opts.topText || DEF_TOP_TEXT
+  const maxTitleW = w * 0.88
+  let tfs = Math.round(58 * s)
+  ctx.font = `900 ${tfs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
+  while (ctx.measureText(titleTxt).width > maxTitleW && tfs > 20) {
+    tfs--
+    ctx.font = `900 ${tfs}px -apple-system,'Helvetica Neue',Arial,sans-serif`
   }
 
-  ctx.textBaseline = 'middle'
-
-  ctx.fillStyle = '#111827'
-  ctx.fillText(waveTxt, w / 2, waveTxtY)
-
-  // ── 4. QR code ────────────────────────────────────────────────────────────
-  const qrSize = Math.round(w * 0.55)
+  // ── 3. QR code — position calculée d'abord ────────────────────────────────
+  const qrSize = Math.round(w * 0.68)
   const qrPad  = Math.round(16 * s)
   const contW  = qrSize + qrPad * 2
   const contH  = qrSize + qrPad * 2
   const contX  = Math.round((w - contW) / 2)
 
-  const starsFs    = Math.round(40 * s)
-  const starsGap   = Math.round(22 * s)
-  const scanFs     = Math.round(38 * s)
-  const scanGap    = Math.round(18 * s)
+  const starsFs    = Math.round(50 * s)
+  const starsGap   = Math.round(20 * s)
+  const scanFs     = Math.round(46 * s)
+  const scanGap    = Math.round(16 * s)
   const totalBlock = contH + starsGap + starsFs + scanGap + scanFs
-  const contY      = bodyY + Math.round((bodyH - totalBlock) * 0.40)
+  const contY      = Math.round(h * 0.27)
+
+  // Titre centré verticalement entre y=0 et contY
+  const titleY = Math.round((contY - tfs) / 2)
+  ctx.textAlign    = 'center'
+  ctx.textBaseline = 'top'
+  ctx.fillStyle    = 'white'
+  textShadow(tfs)
+  ctx.fillText(titleTxt, w / 2, titleY)
+  noShadow()
 
   // Generate QR on temp canvas
   const qrCanvas = document.createElement('canvas')
@@ -208,6 +179,9 @@ export default function ReviewBoostCard({ collectUrl, restaurantName }: Props) {
   const [logoDataUrl,  setLogoDataUrl]  = useState<string | null>(null)
   const [logoEl,       setLogoEl]       = useState<HTMLImageElement | null>(null)
   const [logoName,     setLogoName]     = useState<string | null>(null)
+  const [bgDataUrl,    setBgDataUrl]    = useState<string | null>(null)
+  const [bgEl,         setBgEl]         = useState<HTMLImageElement | null>(null)
+  const [bgName,       setBgName]       = useState<string | null>(null)
   const [topText,      setTopText]      = useState(DEF_TOP_TEXT)
   const [scanText,     setScanText]     = useState(DEF_SCAN)
 
@@ -223,9 +197,17 @@ export default function ReviewBoostCard({ collectUrl, restaurantName }: Props) {
     img.src = logoDataUrl
   }, [logoDataUrl])
 
+  // Load bg HTMLImageElement when dataUrl changes
+  useEffect(() => {
+    if (!bgDataUrl) { setBgEl(null); return }
+    const img = new Image()
+    img.onload = () => setBgEl(img)
+    img.src = bgDataUrl
+  }, [bgDataUrl])
+
   const buildOpts = useCallback((): RenderOpts => ({
-    color1, color2, logoEl, topText, scanText,
-  }), [color1, color2, logoEl, topText, scanText])
+    color1, color2, logoEl, bgEl, topText, scanText,
+  }), [color1, color2, logoEl, bgEl, topText, scanText])
 
   // Re-draw preview on any change
   useEffect(() => {
@@ -303,6 +285,16 @@ export default function ReviewBoostCard({ collectUrl, restaurantName }: Props) {
 
   function removeLogo() { setLogoDataUrl(null); setLogoEl(null); setLogoName(null) }
 
+  function handleBgUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (!file) return
+    setBgName(file.name)
+    const r = new FileReader()
+    r.onload = ev => setBgDataUrl(ev.target?.result as string)
+    r.readAsDataURL(file); e.target.value = ''
+  }
+
+  function removeBg() { setBgDataUrl(null); setBgEl(null); setBgName(null) }
+
   const displayW = 240
   const displayH = Math.round(displayW * PH / PW)
 
@@ -336,53 +328,110 @@ export default function ReviewBoostCard({ collectUrl, restaurantName }: Props) {
 
           {/* COULEURS */}
           <section className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
-            <h3 className="text-sm font-semibold text-slate-800">🎨 Couleurs</h3>
+            <h3 className="text-sm font-semibold text-slate-800">🎨 Fond de la carte</h3>
 
-            {/* Palettes prédéfinies */}
-            <div>
-              <p className="text-xs text-slate-500 mb-2">Palettes rapides</p>
-              <div className="grid grid-cols-6 gap-2">
-                {PALETTES.map(({ name, c1, c2 }) => (
-                  <button
-                    key={name}
-                    title={name}
-                    onClick={() => { setColor1(c1); setColor2(c2) }}
-                    className={cn(
-                      'h-9 rounded-xl border-2 transition-all duration-150',
-                      color1 === c1 && color2 === c2
-                        ? 'border-slate-800 scale-110 shadow-md'
-                        : 'border-transparent hover:scale-105 hover:border-slate-300'
-                    )}
-                    style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
-                  />
+            {/* Option A — Dégradé */}
+            <div className="rounded-xl border-2 border-slate-800 bg-slate-50 p-4 space-y-3">
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Dégradé de couleur</p>
+
+              {/* Palettes rapides */}
+              <div>
+                <p className="text-xs text-slate-400 mb-2">Palettes rapides</p>
+                <div className="grid grid-cols-6 gap-2">
+                  {PALETTES.map(({ name, c1, c2 }) => (
+                    <button
+                      key={name}
+                      title={name}
+                      onClick={() => { setColor1(c1); setColor2(c2) }}
+                      className={cn(
+                        'h-9 rounded-xl border-2 transition-all duration-150',
+                        color1 === c1 && color2 === c2 && !bgDataUrl
+                          ? 'border-slate-800 scale-110 shadow-md'
+                          : 'border-transparent hover:scale-105 hover:border-slate-300'
+                      )}
+                      style={{ background: `linear-gradient(135deg, ${c1}, ${c2})` }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Color pickers */}
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { label: 'Couleur principale', value: color1, set: setColor1 },
+                  { label: 'Couleur secondaire', value: color2, set: setColor2 },
+                ] as const).map(({ label, value, set }) => (
+                  <div key={label} className="space-y-1.5">
+                    <p className="text-xs text-slate-500">{label}</p>
+                    <div className="flex items-center gap-2">
+                      <label className="relative cursor-pointer shrink-0">
+                        <div
+                          className="w-9 h-9 rounded-xl border-2 border-slate-200 shadow-sm hover:scale-105 transition-transform"
+                          style={{ background: value }}
+                        />
+                        <input
+                          type="color" value={value}
+                          onChange={e => set(e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                      </label>
+                      <code className="text-xs text-slate-400 font-mono uppercase">{value}</code>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Color pickers fins */}
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { label: 'Couleur principale', value: color1, set: setColor1 },
-                { label: 'Couleur secondaire', value: color2, set: setColor2 },
-              ] as const).map(({ label, value, set }) => (
-                <div key={label} className="space-y-1.5">
-                  <p className="text-xs text-slate-500">{label}</p>
-                  <div className="flex items-center gap-2">
-                    <label className="relative cursor-pointer shrink-0">
-                      <div
-                        className="w-9 h-9 rounded-xl border-2 border-slate-200 shadow-sm hover:scale-105 transition-transform"
-                        style={{ background: value }}
-                      />
-                      <input
-                        type="color" value={value}
-                        onChange={e => set(e.target.value)}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                      />
-                    </label>
-                    <code className="text-xs text-slate-400 font-mono uppercase">{value}</code>
+            {/* Séparateur OU */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">ou</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+
+            {/* Option B — Image de fond */}
+            <div className={cn(
+              'rounded-xl border-2 p-4 space-y-3 transition-all duration-150',
+              bgDataUrl ? 'border-slate-800 bg-slate-50' : 'border-slate-100'
+            )}>
+              <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Image de fond</p>
+              <p className="text-xs text-slate-400">Couvre toute la carte. Le dégradé reste superposé en transparence pour la lisibilité.</p>
+
+              {bgDataUrl ? (
+                <div className="flex items-center gap-4 p-3 bg-white rounded-xl border border-slate-200">
+                  <div className="w-12 h-12 rounded-xl border-2 border-slate-200 overflow-hidden shrink-0 shadow-sm">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={bgDataUrl} alt="Fond" className="w-full h-full object-cover" />
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 truncate">{bgName}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Image de fond active</p>
+                  </div>
+                  <button
+                    onClick={removeBg}
+                    className="shrink-0 px-3 py-1.5 text-xs font-medium rounded-lg
+                               text-red-500 hover:bg-red-50 border border-red-200 transition-colors"
+                  >
+                    Supprimer
+                  </button>
                 </div>
-              ))}
+              ) : (
+                <label className="flex items-center gap-4 px-4 py-4 border-2 border-dashed border-slate-200
+                                  rounded-xl cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/40
+                                  transition-colors group">
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 group-hover:bg-indigo-100
+                                  flex items-center justify-center text-xl transition-colors shrink-0">
+                    🖼️
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-slate-700 group-hover:text-indigo-600 transition-colors">
+                      Importer une image de fond
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">PNG, JPG, WebP</p>
+                  </div>
+                  <input type="file" accept="image/*" onChange={handleBgUpload} className="sr-only" />
+                </label>
+              )}
             </div>
           </section>
 
@@ -434,7 +483,7 @@ export default function ReviewBoostCard({ collectUrl, restaurantName }: Props) {
 
             <div className="space-y-3">
               {([
-                { label: 'Texte de la bannière',  value: topText,  set: setTopText,  placeholder: DEF_TOP_TEXT, max: 40 },
+                { label: 'Titre principal',        value: topText,  set: setTopText,  placeholder: DEF_TOP_TEXT, max: 40 },
                 { label: 'Appel à l\'action',      value: scanText, set: setScanText, placeholder: DEF_SCAN,    max: 30 },
               ] as const).map(({ label, value, set, placeholder, max }) => (
                 <div key={label} className="space-y-1.5">
